@@ -2,14 +2,17 @@ import random
 
 
 class RubiksCube:
+    # white  = 0 (front)
+    # red    = 1 (left)
+    # green  = 2 (top)
+    # blue   = 3 (bottom)
+    # orange = 4 (right)
+    # yellow = 5 (back)
+    COLOURS = ['W', 'R', 'G', 'B', 'O', 'Y']
+    COLOUR_MAP = {'W': (255, 255, 255), 'R': (255, 0, 0), 'G': (0, 255, 0),
+                  'B': (0, 0, 255), 'O': (255, 165, 0), 'Y': (255, 255, 0)}
+
     def __init__(self):
-        # white  = 0 (front)
-        # red    = 1 (left)
-        # green  = 2 (top)
-        # blue   = 3 (bottom)
-        # orange = 4 (right)
-        # yellow = 5 (back)
-        colours = ['W', 'R', 'G', 'B', 'O', 'Y']
         self.faces = []
         for i in range(6):
             self.faces.append([[self.COLOURS[i] for _ in range(3)] for _ in range(3)])
@@ -42,56 +45,29 @@ class RubiksCube:
                                B[0][0], B[0][1], B[0][2], B[1][0], B[1][1], B[1][2], B[2][0], B[2][1], B[2][2])
 
     def shuffle(self):
-        cubeOps = [self.right, self.up, self.left, self.down, self.front, self.back]
-        for _ in range(100):
-            op = random.choice(cubeOps)
-            op()
+        cube_ops = [self.right, self.up, self.left, self.down, self.front, self.back]
+        for _ in range(20):
+            random.choice(cube_ops)()
 
-    def __rotateClockwise(self, faceIdx):
-        face = self.faces[faceIdx]
-        self.faces[faceIdx] = [[face[2][0], face[1][0], face[0][0]],
-                               [face[2][1], face[1][1], face[0][1]],
-                               [face[2][2], face[1][2], face[0][2]]]
+    def is_solved(self) -> bool:
+        for c in range(6):
+            for i in range(3):
+                for j in range(3):
+                    if self.faces[c][i][j] != self.COLOURS[c]:
+                        return False
+        return True
 
-    def __rotateCounterClockwise(self, faceIdx):
-        face = self.faces[faceIdx]
-        self.faces[faceIdx] = [[face[0][2], face[1][2], face[2][2]],
-                               [face[0][1], face[1][1], face[2][1]],
-                               [face[0][0], face[1][0], face[2][0]]]
+    def __rotate_clockwise(self, face_idx):
+        face = self.faces[face_idx]
+        self.faces[face_idx] = [[face[2][0], face[1][0], face[0][0]],
+                                [face[2][1], face[1][1], face[0][1]],
+                                [face[2][2], face[1][2], face[0][2]]]
 
-    def front(self):
-        temp = [self.faces[2][2][0], self.faces[2][2][1], self.faces[2][2][2]]
-        for i in range(3):
-            self.faces[0][i][2] = self.faces[3][i][2]
-            self.faces[3][i][2] = self.faces[5][2 - i][0]
-            self.faces[5][2 - i][0] = self.faces[2][i][2]
-            self.faces[2][i][2] = temp[i]
-        self.__rotateClockwise(4)
-
-    def up(self):
-        temp = self.faces[0][0]
-        self.faces[0][0] = self.faces[4][0]
-        self.faces[4][0] = self.faces[5][0]
-        self.faces[5][0] = self.faces[1][0]
-        self.faces[1][0] = temp
-        self.__rotateClockwise(2)
-
-    def left(self):
-        temp = [self.faces[0][0][0], self.faces[0][1][0], self.faces[0][2][0]]
-        for i in range(3):
-            self.faces[0][i][0] = self.faces[2][i][0]
-            self.faces[2][i][0] = self.faces[5][2 - i][2]
-            self.faces[5][2 - i][2] = self.faces[3][i][0]
-            self.faces[3][i][0] = temp[i]
-        self.__rotateClockwise(1)
-
-    def down(self):
-        temp = self.faces[0][2]
-        self.faces[0][2] = self.faces[1][2]
-        self.faces[1][2] = self.faces[5][2]
-        self.faces[5][2] = self.faces[4][2]
-        self.faces[4][2] = temp
-        self.__rotateClockwise(3)
+    def __rotate_counter_clockwise(self, face_idx):
+        face = self.faces[face_idx]
+        self.faces[face_idx] = [[face[0][2], face[1][2], face[2][2]],
+                                [face[0][1], face[1][1], face[2][1]],
+                                [face[0][0], face[1][0], face[2][0]]]
 
     def front(self):
         temp = [self.faces[2][2][0], self.faces[2][2][1], self.faces[2][2][2]]
@@ -100,7 +76,84 @@ class RubiksCube:
             self.faces[1][2 - i][2] = self.faces[3][0][2 - i]
             self.faces[3][0][2 - i] = self.faces[4][i][0]
             self.faces[4][i][0] = temp[i]
-        self.__rotateClockwise(0)
+        self.__rotate_clockwise(0)
+
+    def front_prime(self):
+        temp = [self.faces[2][2][0], self.faces[2][2][1], self.faces[2][2][2]]
+        for i in range(3):
+            self.faces[2][2][i] = self.faces[4][i][0]
+            self.faces[4][i][0] = self.faces[3][0][2 - i]
+            self.faces[3][0][2 - i] = self.faces[1][i][2]
+            self.faces[1][i][2] = temp[2 - i]
+        self.__rotate_counter_clockwise(0)
+
+    def left(self):
+        temp = [self.faces[0][0][0], self.faces[0][1][0], self.faces[0][2][0]]
+        for i in range(3):
+            self.faces[0][i][0] = self.faces[2][i][0]
+            self.faces[2][i][0] = self.faces[5][2 - i][2]
+            self.faces[5][2 - i][2] = self.faces[3][i][0]
+            self.faces[3][i][0] = temp[i]
+        self.__rotate_clockwise(1)
+
+    def left_prime(self):
+        temp = [self.faces[0][0][0], self.faces[0][1][0], self.faces[0][2][0]]
+        for i in range(3):
+            self.faces[0][i][0] = self.faces[3][i][0]
+            self.faces[3][i][0] = self.faces[5][2 - i][2]
+            self.faces[5][2 - i][2] = self.faces[2][i][0]
+            self.faces[2][i][0] = temp[i]
+        self.__rotate_counter_clockwise(1)
+
+    def up(self):
+        temp = self.faces[0][0]
+        self.faces[0][0] = self.faces[4][0]
+        self.faces[4][0] = self.faces[5][0]
+        self.faces[5][0] = self.faces[1][0]
+        self.faces[1][0] = temp
+        self.__rotate_clockwise(2)
+
+    def up_prime(self):
+        temp = self.faces[0][0]
+        self.faces[0][0] = self.faces[1][0]
+        self.faces[1][0] = self.faces[5][0]
+        self.faces[5][0] = self.faces[4][0]
+        self.faces[4][0] = temp
+        self.__rotate_counter_clockwise(2)
+
+    def down(self):
+        temp = self.faces[0][2]
+        self.faces[0][2] = self.faces[1][2]
+        self.faces[1][2] = self.faces[5][2]
+        self.faces[5][2] = self.faces[4][2]
+        self.faces[4][2] = temp
+        self.__rotate_clockwise(3)
+
+    def down_prime(self):
+        temp = self.faces[0][2]
+        self.faces[0][2] = self.faces[4][2]
+        self.faces[4][2] = self.faces[5][2]
+        self.faces[5][2] = self.faces[1][2]
+        self.faces[1][2] = temp
+        self.__rotate_counter_clockwise(3)
+
+    def right(self):
+        temp = [self.faces[0][0][2], self.faces[0][1][2], self.faces[0][2][2]]
+        for i in range(3):
+            self.faces[0][i][2] = self.faces[3][i][2]
+            self.faces[3][i][2] = self.faces[5][2 - i][0]
+            self.faces[5][2 - i][0] = self.faces[2][i][2]
+            self.faces[2][i][2] = temp[i]
+        self.__rotate_clockwise(4)
+
+    def right_prime(self):
+        temp = [self.faces[0][0][2], self.faces[0][1][2], self.faces[0][2][2]]
+        for i in range(3):
+            self.faces[0][i][2] = self.faces[2][i][2]
+            self.faces[2][i][2] = self.faces[5][2 - i][0]
+            self.faces[5][2 - i][0] = self.faces[3][i][2]
+            self.faces[3][i][2] = temp[i]
+        self.__rotate_counter_clockwise(4)
 
     def back(self):
         temp = [self.faces[2][0][0], self.faces[2][0][1], self.faces[2][0][2]]
@@ -109,4 +162,14 @@ class RubiksCube:
             self.faces[4][i][2] = self.faces[3][2][2 - i]
             self.faces[3][2][2 - i] = self.faces[1][2 - i][0]
             self.faces[1][2 - i][0] = temp[i]
-        self.__rotateClockwise(5)
+        self.__rotate_clockwise(5)
+
+    def back_prime(self):
+        temp = [self.faces[2][0][0], self.faces[2][0][1], self.faces[2][0][2]]
+        for i in range(3):
+            self.faces[2][0][i] = self.faces[1][2 - i][0]
+            self.faces[1][2 - i][0] = self.faces[3][2][2 - i]
+            self.faces[3][2][2 - i] = self.faces[4][i][2]
+            self.faces[4][i][2] = temp[i]
+        self.__rotate_counter_clockwise(5)
+
