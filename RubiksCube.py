@@ -13,6 +13,7 @@ class RubiksCube:
                   'B': (0, 0, 255), 'O': (255, 165, 0), 'Y': (255, 255, 0)}
 
     def __init__(self):
+        self.inverse_ops = []
         self.faces = []
         for i in range(6):
             self.faces.append([[self.COLOURS[i] for _ in range(3)] for _ in range(3)])
@@ -46,7 +47,7 @@ class RubiksCube:
 
     def shuffle(self):
         cube_ops = [self.right, self.up, self.left, self.down, self.front, self.back]
-        for _ in range(20):
+        for _ in range(10):
             random.choice(cube_ops)()
 
     def is_solved(self) -> bool:
@@ -56,6 +57,11 @@ class RubiksCube:
                     if self.faces[c][i][j] != self.COLOURS[c]:
                         return False
         return True
+
+    def step_back(self):
+        op = self.inverse_ops.pop()
+        op()
+        self.inverse_ops.pop()
 
     def __rotate_clockwise(self, face_idx):
         face = self.faces[face_idx]
@@ -77,15 +83,17 @@ class RubiksCube:
             self.faces[3][0][2 - i] = self.faces[4][i][0]
             self.faces[4][i][0] = temp[i]
         self.__rotate_clockwise(0)
+        self.inverse_ops.append(self.front_prime)
 
     def front_prime(self):
         temp = [self.faces[2][2][0], self.faces[2][2][1], self.faces[2][2][2]]
         for i in range(3):
             self.faces[2][2][i] = self.faces[4][i][0]
             self.faces[4][i][0] = self.faces[3][0][2 - i]
-            self.faces[3][0][2 - i] = self.faces[1][i][2]
-            self.faces[1][i][2] = temp[2 - i]
+            self.faces[3][0][2 - i] = self.faces[1][2 - i][2]
+            self.faces[1][2 - i][2] = temp[i]
         self.__rotate_counter_clockwise(0)
+        self.inverse_ops.append(self.front)
 
     def left(self):
         temp = [self.faces[0][0][0], self.faces[0][1][0], self.faces[0][2][0]]
@@ -95,6 +103,7 @@ class RubiksCube:
             self.faces[5][2 - i][2] = self.faces[3][i][0]
             self.faces[3][i][0] = temp[i]
         self.__rotate_clockwise(1)
+        self.inverse_ops.append(self.left_prime)
 
     def left_prime(self):
         temp = [self.faces[0][0][0], self.faces[0][1][0], self.faces[0][2][0]]
@@ -104,6 +113,7 @@ class RubiksCube:
             self.faces[5][2 - i][2] = self.faces[2][i][0]
             self.faces[2][i][0] = temp[i]
         self.__rotate_counter_clockwise(1)
+        self.inverse_ops.append(self.left)
 
     def up(self):
         temp = self.faces[0][0]
@@ -112,6 +122,7 @@ class RubiksCube:
         self.faces[5][0] = self.faces[1][0]
         self.faces[1][0] = temp
         self.__rotate_clockwise(2)
+        self.inverse_ops.append(self.up_prime)
 
     def up_prime(self):
         temp = self.faces[0][0]
@@ -120,6 +131,7 @@ class RubiksCube:
         self.faces[5][0] = self.faces[4][0]
         self.faces[4][0] = temp
         self.__rotate_counter_clockwise(2)
+        self.inverse_ops.append(self.up)
 
     def down(self):
         temp = self.faces[0][2]
@@ -128,6 +140,7 @@ class RubiksCube:
         self.faces[5][2] = self.faces[4][2]
         self.faces[4][2] = temp
         self.__rotate_clockwise(3)
+        self.inverse_ops.append(self.down_prime)
 
     def down_prime(self):
         temp = self.faces[0][2]
@@ -136,6 +149,7 @@ class RubiksCube:
         self.faces[5][2] = self.faces[1][2]
         self.faces[1][2] = temp
         self.__rotate_counter_clockwise(3)
+        self.inverse_ops.append(self.down)
 
     def right(self):
         temp = [self.faces[0][0][2], self.faces[0][1][2], self.faces[0][2][2]]
@@ -145,6 +159,7 @@ class RubiksCube:
             self.faces[5][2 - i][0] = self.faces[2][i][2]
             self.faces[2][i][2] = temp[i]
         self.__rotate_clockwise(4)
+        self.inverse_ops.append(self.right_prime)
 
     def right_prime(self):
         temp = [self.faces[0][0][2], self.faces[0][1][2], self.faces[0][2][2]]
@@ -154,6 +169,7 @@ class RubiksCube:
             self.faces[5][2 - i][0] = self.faces[3][i][2]
             self.faces[3][i][2] = temp[i]
         self.__rotate_counter_clockwise(4)
+        self.inverse_ops.append(self.right)
 
     def back(self):
         temp = [self.faces[2][0][0], self.faces[2][0][1], self.faces[2][0][2]]
@@ -163,6 +179,7 @@ class RubiksCube:
             self.faces[3][2][2 - i] = self.faces[1][2 - i][0]
             self.faces[1][2 - i][0] = temp[i]
         self.__rotate_clockwise(5)
+        self.inverse_ops.append(self.back_prime)
 
     def back_prime(self):
         temp = [self.faces[2][0][0], self.faces[2][0][1], self.faces[2][0][2]]
@@ -172,4 +189,4 @@ class RubiksCube:
             self.faces[3][2][2 - i] = self.faces[4][i][2]
             self.faces[4][i][2] = temp[i]
         self.__rotate_counter_clockwise(5)
-
+        self.inverse_ops.append(self.back)

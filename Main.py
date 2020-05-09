@@ -17,6 +17,8 @@ LENGTH = 32
 BUTTON_WIDTH = 80
 BUTTON_HEIGHT = 32
 rc = RubiksCube()
+state = [False, False]
+font = pygame.font.SysFont('lucidaconsole', 14)
 
 
 def draw_face(screen, face_idx, start_pos):
@@ -40,36 +42,64 @@ def draw_cube(screen):
 
 
 def key_handle(key):
+    if key == pygame.K_n:
+        state[1] = not state[1]
     if key == pygame.K_RIGHT:
-        rc.right()
+        if state[1]:
+            rc.right()
+        else:
+            rc.right_prime()
     if key == pygame.K_UP:
-        rc.up()
+        if state[1]:
+            rc.up()
+        else:
+            rc.up_prime()
     if key == pygame.K_LEFT:
-        rc.left()
+        if state[1]:
+            rc.left()
+        else:
+            rc.left_prime()
     if key == pygame.K_DOWN:
-        rc.down()
+        if state[1]:
+            rc.down()
+        else:
+            rc.down_prime()
     if key == pygame.K_SPACE:
-        rc.front()
+        if state[1]:
+            rc.front()
+        else:
+            rc.front_prime()
     if key == pygame.K_b:
-        rc.back()
+        if state[1]:
+            rc.back()
+        else:
+            rc.back_prime()
 
 
-def solveCube():
-    return
+def start_reset():
+    if rc.is_solved():
+        return
+    else:
+        state[0] = True
+
+
+def mode():
+    if state[1]:
+        return 'Counter Clockwise'
+    else:
+        return 'Clockwise'
 
 
 def main():
-    solve_button_x = FRONT_TOP_LEFT[0] + LENGTH + 8 * PADDING - BUTTON_WIDTH
-    solve_button_y = FRONT_TOP_LEFT[1] + LENGTH + 4 * PADDING - BUTTON_HEIGHT
-    solve_button_font = pygame.font.SysFont('lucidaconsole', 12)
-    solve_button = Button('solve', (solve_button_x, solve_button_y), (BUTTON_WIDTH, BUTTON_HEIGHT), rc.shuffle, 'Solve',
-                          solve_button_font)
+    reset_button_x = FRONT_TOP_LEFT[0] + LENGTH + 8 * PADDING - BUTTON_WIDTH
+    reset_button_y = FRONT_TOP_LEFT[1] + LENGTH + 4 * PADDING - BUTTON_HEIGHT
+    reset_button = Button('reset', (reset_button_x, reset_button_y), (BUTTON_WIDTH, BUTTON_HEIGHT), start_reset,
+                          'Reset', font)
 
     shuffle_button_x = FRONT_TOP_LEFT[0] + LENGTH + 8 * PADDING - BUTTON_WIDTH
     shuffle_button_y = FRONT_TOP_LEFT[1] + LENGTH + 5 * PADDING - BUTTON_HEIGHT
-    shuffle_button_font = pygame.font.SysFont('lucidaconsole', 12)
     shuffle_button = Button('shuffle', (shuffle_button_x, shuffle_button_y), (BUTTON_WIDTH, BUTTON_HEIGHT), rc.shuffle,
-                            'Shuffle', shuffle_button_font)
+                            'Shuffle', font)
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -78,13 +108,21 @@ def main():
             if event.type == pygame.KEYDOWN:
                 key_handle(event.key)
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if solve_button.is_within(pygame.mouse.get_pos()):
-                    solveCube()
+                if reset_button.is_within(pygame.mouse.get_pos()):
+                    reset_button.execute()
                 if shuffle_button.is_within(pygame.mouse.get_pos()):
-                    rc.shuffle()
+                    shuffle_button.execute()
         screen.fill((0, 0, 0))
+
+        if state[0]:
+            rc.step_back()
+            if rc.is_solved():
+                state[0] = False
+
+        mode_render = font.render("Mode: " + mode(), True, (255, 255, 255))
+        screen.blit(mode_render, (10,10))
         draw_cube(screen)
-        solve_button.draw_button(screen, pygame.mouse.get_pos(), pygame.mouse.get_pressed() == (1, 0, 0))
+        reset_button.draw_button(screen, pygame.mouse.get_pos(), pygame.mouse.get_pressed() == (1, 0, 0))
         shuffle_button.draw_button(screen, pygame.mouse.get_pos(), pygame.mouse.get_pressed() == (1, 0, 0))
         pygame.display.flip()
         fpsClock.tick(fps)
