@@ -1,5 +1,5 @@
 # rubiks-cube-simulator
-A fun representation of a Rubik's Cube.
+An interactable virtual Rubik's Cube.
 
 # controls
 F = space bar \
