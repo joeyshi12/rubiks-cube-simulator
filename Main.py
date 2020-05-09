@@ -8,7 +8,7 @@ pygame.init()
 pygame.display.set_caption('Rubik\'s Cube Simulator')
 fps = 60
 fpsClock = pygame.time.Clock()
-width, height = 680, 460
+width, height = 680, 440
 screen = pygame.display.set_mode((width, height))
 
 FRONTTOPLEFT = (200, 160)
@@ -55,7 +55,6 @@ def keyHandle(key):
 
 
 def solveCube():
-    print("TO BE CONTINUED")
     return
 
 

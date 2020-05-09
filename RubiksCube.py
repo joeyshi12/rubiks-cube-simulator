@@ -12,7 +12,7 @@ class RubiksCube:
         colours = ['W', 'R', 'G', 'B', 'O', 'Y']
         self.faces = []
         for i in range(6):
-            self.faces.append([[colours[i] for _ in range(3)] for _ in range(3)])
+            self.faces.append([[self.COLOURS[i] for _ in range(3)] for _ in range(3)])
 
     def __str__(self):
         W = self.faces[0]
@@ -59,8 +59,8 @@ class RubiksCube:
                                [face[0][1], face[1][1], face[2][1]],
                                [face[0][0], face[1][0], face[2][0]]]
 
-    def right(self):
-        temp = [self.faces[0][0][2], self.faces[0][1][2], self.faces[0][2][2]]
+    def front(self):
+        temp = [self.faces[2][2][0], self.faces[2][2][1], self.faces[2][2][2]]
         for i in range(3):
             self.faces[0][i][2] = self.faces[3][i][2]
             self.faces[3][i][2] = self.faces[5][2 - i][0]
