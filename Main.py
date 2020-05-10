@@ -3,6 +3,7 @@ import pygame
 from pygame.locals import *
 from RubiksCube import RubiksCube
 from Button import Button
+from threading import Thread
 
 pygame.init()
 pygame.display.set_caption('Rubik\'s Cube Simulator')
@@ -16,9 +17,10 @@ PADDING = 40
 LENGTH = 32
 BUTTON_WIDTH = 80
 BUTTON_HEIGHT = 32
+FONT = pygame.font.SysFont('lucidaconsole', 14)
+
 rc = RubiksCube()
-state = [False, False]
-font = pygame.font.SysFont('lucidaconsole', 14)
+direction = [1]
 
 
 def draw_face(screen, face_idx, start_pos):
@@ -43,63 +45,61 @@ def draw_cube(screen):
 
 def key_handle(key):
     if key == pygame.K_n:
-        state[1] = not state[1]
+        direction[0] = not direction[0]
     if key == pygame.K_RIGHT:
-        if state[1]:
+        if direction[0]:
             rc.right()
         else:
             rc.right_prime()
     if key == pygame.K_UP:
-        if state[1]:
+        if direction[0]:
             rc.up()
         else:
             rc.up_prime()
     if key == pygame.K_LEFT:
-        if state[1]:
+        if direction[0]:
             rc.left()
         else:
             rc.left_prime()
     if key == pygame.K_DOWN:
-        if state[1]:
+        if direction[0]:
             rc.down()
         else:
             rc.down_prime()
     if key == pygame.K_SPACE:
-        if state[1]:
+        if direction[0]:
             rc.front()
         else:
             rc.front_prime()
     if key == pygame.K_b:
-        if state[1]:
+        if direction[0]:
             rc.back()
         else:
             rc.back_prime()
 
 
-def start_reset():
-    if rc.is_solved():
-        return
-    else:
-        state[0] = True
+def reset():
+    thread = Thread(target=rc.reset)
+    thread.start()
+    del thread
 
 
-def mode():
-    if state[1]:
-        return 'Counter Clockwise'
-    else:
-        return 'Clockwise'
+def shuffle():
+    thread = Thread(target=rc.shuffle)
+    thread.start()
+    del thread
 
 
 def main():
     reset_button_x = FRONT_TOP_LEFT[0] + LENGTH + 8 * PADDING - BUTTON_WIDTH
     reset_button_y = FRONT_TOP_LEFT[1] + LENGTH + 4 * PADDING - BUTTON_HEIGHT
-    reset_button = Button('reset', (reset_button_x, reset_button_y), (BUTTON_WIDTH, BUTTON_HEIGHT), start_reset,
-                          'Reset', font)
+    reset_button = Button('reset', (reset_button_x, reset_button_y), (BUTTON_WIDTH, BUTTON_HEIGHT), reset,
+                          'Reset', FONT)
 
     shuffle_button_x = FRONT_TOP_LEFT[0] + LENGTH + 8 * PADDING - BUTTON_WIDTH
     shuffle_button_y = FRONT_TOP_LEFT[1] + LENGTH + 5 * PADDING - BUTTON_HEIGHT
-    shuffle_button = Button('shuffle', (shuffle_button_x, shuffle_button_y), (BUTTON_WIDTH, BUTTON_HEIGHT), rc.shuffle,
-                            'Shuffle', font)
+    shuffle_button = Button('shuffle', (shuffle_button_x, shuffle_button_y), (BUTTON_WIDTH, BUTTON_HEIGHT), shuffle,
+                            'Shuffle', FONT)
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -113,13 +113,7 @@ def main():
                 if shuffle_button.is_within(pygame.mouse.get_pos()):
                     shuffle_button.execute()
         screen.fill((0, 0, 0))
-
-        if state[0]:
-            rc.step_back()
-            if rc.is_solved():
-                state[0] = False
-
-        mode_render = font.render("Mode: " + mode(), True, (255, 255, 255))
+        mode_render = FONT.render("Mode: Clockwise" if direction[0] else "Mode: Counter Clockwise", True, (255, 255, 255))
         screen.blit(mode_render, (10,10))
         draw_cube(screen)
         reset_button.draw_button(screen, pygame.mouse.get_pos(), pygame.mouse.get_pressed() == (1, 0, 0))

@@ -58,10 +58,12 @@ class RubiksCube:
                         return False
         return True
 
-    def step_back(self):
-        op = self.inverse_ops.pop()
-        op()
-        self.inverse_ops.pop()
+    def reset(self):
+        while not self.is_solved():
+            op = self.inverse_ops.pop()
+            op()
+            self.inverse_ops.pop()
+        self.inverse_ops.clear()
 
     def __rotate_clockwise(self, face_idx):
         face = self.faces[face_idx]
