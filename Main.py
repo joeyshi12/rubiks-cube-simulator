@@ -3,7 +3,6 @@ import pygame
 from pygame.locals import *
 from RubiksCube import RubiksCube
 from Button import Button
-from threading import Thread
 
 pygame.init()
 pygame.display.set_caption('Rubik\'s Cube Simulator')
@@ -78,27 +77,15 @@ def key_handle(key):
             rc.back_prime()
 
 
-def reset():
-    thread = Thread(target=rc.reset)
-    thread.start()
-    del thread
-
-
-def shuffle():
-    thread = Thread(target=rc.shuffle)
-    thread.start()
-    del thread
-
-
 def main():
     reset_button_x = FRONT_TOP_LEFT[0] + LENGTH + 8 * PADDING - BUTTON_WIDTH
     reset_button_y = FRONT_TOP_LEFT[1] + LENGTH + 4 * PADDING - BUTTON_HEIGHT
-    reset_button = Button('reset', (reset_button_x, reset_button_y), (BUTTON_WIDTH, BUTTON_HEIGHT), reset,
+    reset_button = Button('reset', (reset_button_x, reset_button_y), (BUTTON_WIDTH, BUTTON_HEIGHT), rc.reset,
                           'Reset', FONT)
 
     shuffle_button_x = FRONT_TOP_LEFT[0] + LENGTH + 8 * PADDING - BUTTON_WIDTH
     shuffle_button_y = FRONT_TOP_LEFT[1] + LENGTH + 5 * PADDING - BUTTON_HEIGHT
-    shuffle_button = Button('shuffle', (shuffle_button_x, shuffle_button_y), (BUTTON_WIDTH, BUTTON_HEIGHT), shuffle,
+    shuffle_button = Button('shuffle', (shuffle_button_x, shuffle_button_y), (BUTTON_WIDTH, BUTTON_HEIGHT), rc.shuffle,
                             'Shuffle', FONT)
     while True:
         for event in pygame.event.get():
